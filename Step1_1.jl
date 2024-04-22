@@ -1,4 +1,6 @@
 using JuMP, Gurobi
+using Plots
+
 include("ScenGen.jl")
 scenarios = GenScens() #scenarios, t, price prod imbalance
 
@@ -28,7 +30,7 @@ Step1_1 = Model(Gurobi.Optimizer)
 @constraint(Step1_1, [w in W, t in T],
             delta_t[w,t] == p_real[w,t] - p_DA[t])
 @constraint(Step1_1, [w in W, t in T],
-            I_B[w,t] <= (Imbalance[w,t]*0.9 + (1-Imbalance[w,t])*1.1) * lambda_DA[w,t] * delta_t[w,t])
+            I_B[w,t] <= (Imbalance[w,t]*0.9 + (1-Imbalance[w,t])*1.2) * lambda_DA[w,t] * delta_t[w,t])
             #Firstly, in the purple parenthesis, the balancing market price is set by the system imbalance
             #Secondly, the sign of delta_t[w,t] then tells us whether the WF is earning or losing money @ the balancing market price
 #************************************************************************
@@ -48,3 +50,16 @@ if termination_status(Step1_1) == MOI.OPTIMAL
 end
 #************************************************************************
 
+#************************************************************************
+# PLOT - profit distribution over scenarios
+Profits = zeros(W[end])
+for w in W
+    DA_prof = sum(lambda_DA[w,t] * value(p_DA[t]) for t in T)
+    balancing_prof = sum( (Imbalance[w,t]*0.9 + (1-Imbalance[w,t])*1.2) * lambda_DA[w,t] * (p_real[w,t] - value(p_DA[t])) for t in T)
+    Profits[w] = DA_prof + balancing_prof
+end
+print("So the average profits are: €", round(sum(Profits)/W[end],digits=1))
+
+histogram(Profits, label="Scenarios", xlabel="Profit [€]", ylabel="Frequency") #add vline at expected price
+#plot(Profits, label="label", xlabel="Scenario", ylabel="Profit [€]")
+#************************************************************************

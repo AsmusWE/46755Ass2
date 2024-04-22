@@ -1,4 +1,6 @@
 using JuMP, Gurobi
+using Plots
+
 include("ScenGen.jl")
 scenarios = GenScens() #scenarios, t, price prod imbalance
 
@@ -53,3 +55,34 @@ if termination_status(Step1_2) == MOI.OPTIMAL
 end
 #************************************************************************
 
+#************************************************************************
+# PLOT - profit distribution over scenarios
+Profits = zeros(W[end])
+delta_tup = zeros(W[end],T[end])
+delta_tdown = zeros(W[end],T[end]) #could have been declared inside loop to avoid the W-dimension, but to be consistent with model formulation it is placed out here
+
+for w in W
+    DA_prof = sum(lambda_DA[w,t] * value(p_DA[t]) for t in T)
+    #delta_t[w,t] == p_real[w,t] - p_DA[t]
+    #delta_t[w,t] == delta_tup[w,t] - delta_tdown[w,t]
+    for t in T
+        if(p_real[w,t] - value(p_DA[t]) >= 0)
+            delta_tup[w,t] = p_real[w,t] - value(p_DA[t])
+            delta_tdown[w,t] = 0
+        else 
+            delta_tdown[w,t] = value(p_DA[t]) - p_real[w,t]
+            delta_tup[w,t] = 0
+        end
+    end
+    balancing_prof = sum(
+                        -Imbalance[w,t]*lambda_DA[w,t]*delta_tdown[w,t] #System surplus, WF deficit, pay @ DA price
+                        -(1-Imbalance[w,t])*1.2*lambda_DA[w,t]*delta_tdown[w,t] #System deficit, WF deficit, pay @ 1.2*DA price
+                        +Imbalance[w,t]*0.9*lambda_DA[w,t]*delta_tup[w,t] #System surplus, WF surplus, earn @ 0.9*DA price
+                        +(1-Imbalance[w,t])*lambda_DA[w,t]*delta_tup[w,t] for t in T)
+    Profits[w] = DA_prof + balancing_prof
+end
+print("So the average profits are: €", round(sum(Profits)/W[end],digits=1))
+
+histogram(Profits, label="Scenarios", xlabel="Profit [€]", ylabel="Frequency") #add vline at expected price
+#plot(Profits, label="label", xlabel="Scenario", ylabel="Profit [€]")
+#************************************************************************
