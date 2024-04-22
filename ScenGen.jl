@@ -30,6 +30,7 @@ function GenScens()
             end
         end
     end
-    #scenarios[:,:,2] = scenarios[:,:,2]/maximum(scenarios[:,:,2])*200
+    # Normalizing to 200
+    scenarios[:,:,2] = scenarios[:,:,2]/maximum(scenarios[:,:,2])*200
     return scenarios
 end
