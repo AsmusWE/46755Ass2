@@ -11,6 +11,8 @@ W = collect(1:size(scenarios)[1])
 
 prob = ones(W[end])/W[end] #COMMENT: should not be all scenarios but only 250 out of 1200!!
 P_nom = 200 #MW
+alpha = 0.9
+beta = 0.1 # code in a way that beta can be increased gradually and the results are saved
 
 
 #************************************************************************
@@ -23,8 +25,8 @@ Step1_1 = Model(Gurobi.Optimizer)
 @variable()
 
 @objective(Step1_1, Max,
-            sum( prob[w] * sum( lambda_DA[w,t]*p_DA[t] + I_B[w,t] for t in T) for w in W)
-            + β)
+           (1-beta)*(sum( prob[w] * sum( lambda_DA[w,t]*p_DA[t] + I_B[w,t] for t in T) for w in W))
+            + β(eta - (1/(1-alpha))*sum(prob[w]*teta[w] for w in W)))
 
 @constraint(Step1_1, [w in W, t in T],
             delta_t[w,t] == p_real[w,t] - p_DA[t])
