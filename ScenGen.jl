@@ -20,9 +20,9 @@ function GenScens()
         for j in range(1, prodDays)
             for u in range(1, imbalanceScens)
                 # Setting price
-                scenarios[currScen, :, 1] = priceDF[i:(i+23),5] #column 5 is spot price in EU/MWh
+                scenarios[currScen, :, 1] = priceDF[1+(24*(i-1)):(24*(i-1))+24,5] #column 5 is spot price in EU/MWh
                 # Setting prod
-                scenarios[currScen, :, 2] = prodDF[j:(j+23),9] #column 9 is current forecast in MWh/h
+                scenarios[currScen, :, 2] = prodDF[1+(24*(j-1)):(24*(j-1))+24,9] #column 9 is current forecast in MWh/h
                 # Setting deficit
                 scenarios[currScen, :, 3] = imbalance[u,:]
                 # Advancing scenarios
@@ -30,5 +30,7 @@ function GenScens()
             end
         end
     end
+    # Normalizing to 200
+    scenarios[:,:,2] = scenarios[:,:,2]/maximum(scenarios[:,:,2])*200
     return scenarios
 end
