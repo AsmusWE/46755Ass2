@@ -1,4 +1,6 @@
 using JuMP, Gurobi
+using Plots
+
 include("ScenGen.jl")
 scenarios = GenScens() #scenarios, t, price prod imbalance
 
@@ -13,7 +15,7 @@ prob = ones(W[end])/W[end] #COMMENT: should not be all scenarios but only 250 ou
 P_nom = 200 #MW
 alpha = 0.9
 betavars = 10
-Beta = collect(Float64,0:1:10) ./ betavars # code in a way that beta can be increased gradually and the results are saved
+beta = collect(Float64,0:1:10) ./ betavars # code in a way that beta can be increased gradually and the results are saved
 
 VaR = zeros(betavars)
 CVaR = zeros(betavars)
@@ -60,7 +62,7 @@ for b in 1:betavars
     #************************************************************************
     VaR[b] = value(zeta)
     CVaR[b] = value(zeta) - (1/(1-alpha))*sum(prob[w] * value(eta[w]) for w in W)
-    Profit[b] = objective_value(Step1_3_1)
+    Profit[b] = sum( prob[w] * sum( lambda_DA[w,t]*value(p_DA[t]) + value(I_B[w,t]) for t in T) for w in W)
 end
 
 #************************************************************************
