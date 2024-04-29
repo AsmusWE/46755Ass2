@@ -16,6 +16,7 @@ P_nom = 200 #MW
 alpha = 0.9
 betavars = 10
 beta = collect(Float64,0:1:10) ./ betavars # code in a way that beta can be increased gradually and the results are saved
+#beta = collect(Float64,0:1:10) ./ (betavars*1000)
 
 VaR = zeros(betavars)
 CVaR = zeros(betavars)

@@ -1,20 +1,23 @@
 using JuMP, Gurobi
-using Plots
+using Plots, Distributions
 
 include("ScenGen.jl")
 scenarios = GenScens() #scenarios, t, price prod imbalance
 
-lambda_DA = scenarios[:,:,1]
-p_real = scenarios[:,:,2] #COMMENT: should be normalized to the 200 MW wind farm size in the assignment!!
-Imbalance = scenarios[:,:,3]
+T = collect(1:24)
+W_tot = collect(1:1200)
 
-T = collect(1:size(scenarios)[2])
-W = collect(1:size(scenarios)[1])
+num_samples = 250
 
-prob = ones(W[end])/W[end] #COMMENT: should not be all scenarios but only 250 out of 1200!!
+samples = collect(1:250) #sample(W_tot, num_samples, replace=false)
+W = collect(1:num_samples)
+
+lambda_DA = scenarios[samples,:,1]
+p_real = scenarios[samples,:,2] #COMMENT: should be normalized to the 200 MW wind farm size in the assignment!!
+Imbalance = scenarios[samples,:,3]
+
+prob = ones(num_samples) ./ num_samples #COMMENT: should not be all scenarios but only 250 out of 1200!!
 P_nom = 200 #MW
-
-
 
 #************************************************************************
 # MODEL
@@ -63,3 +66,4 @@ print("So the average profits are: €", round(sum(Profits)/W[end],digits=1))
 histogram(Profits, label="Scenarios", xlabel="Profit [€]", ylabel="Frequency") #add vline at expected price
 #plot(Profits, label="label", xlabel="Scenario", ylabel="Profit [€]")
 #************************************************************************
+
