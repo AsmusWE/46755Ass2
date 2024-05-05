@@ -9,7 +9,7 @@ W_tot = collect(1:1200)
 
 num_samples = 250
 
-samples = collect(1:250) #sample(W_tot, num_samples, replace=false)
+samples = sample(W_tot, num_samples, replace=false) #collect(1:250) #
 W = collect(1:num_samples)
 
 lambda_DA = scenarios[samples,:,1]

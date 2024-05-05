@@ -9,7 +9,7 @@ W_tot = collect(1:1200)
 
 num_samples = 250
 
-samples = collect(1:250) #sample(W_tot, num_samples, replace=false)
+samples = sample(W_tot, num_samples, replace=false) #collect(1:250) #
 W = collect(1:num_samples)
 
 lambda_DA = scenarios[samples,:,1]
@@ -56,10 +56,12 @@ end
 #************************************************************************
 # PLOT - profit distribution over scenarios
 Profits = zeros(W[end])
+DA_prof = zeros(W[end])
+balancing_prof = zeros(W[end])
 for w in W
-    DA_prof = sum(lambda_DA[w,t] * value(p_DA[t]) for t in T)
-    balancing_prof = sum( (Imbalance[w,t]*0.9 + (1-Imbalance[w,t])*1.2) * lambda_DA[w,t] * (p_real[w,t] - value(p_DA[t])) for t in T)
-    Profits[w] = DA_prof + balancing_prof
+    DA_prof[w] = sum(lambda_DA[w,t] * value(p_DA[t]) for t in T)
+    balancing_prof[w] = sum( (Imbalance[w,t]*0.9 + (1-Imbalance[w,t])*1.2) * lambda_DA[w,t] * (p_real[w,t] - value(p_DA[t])) for t in T)
+    Profits[w] = DA_prof[w] + balancing_prof[w]
 end
 print("So the average profits are: €", round(sum(Profits)/W[end],digits=1))
 
