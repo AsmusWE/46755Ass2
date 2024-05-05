@@ -31,41 +31,47 @@ Profit = zeros(betavars+1)
 
 for b in 1:betavars+1
     #************************************************************************
-    # MODEL
-    Step1_3_1 = Model(Gurobi.Optimizer)
+    # MODEL        
+    Step1_3_2 = Model(Gurobi.Optimizer)
 
-    @variable(Step1_3_1, 0 <= p_DA[t in T] <= P_nom) #Electricity offered in DA market
-    @variable(Step1_3_1, delta_t[w in W, t in T]) #Realised difference in generation and offer in DA, auxiliary
-    @variable(Step1_3_1, I_B[w in W, t in T]) #The profit balance in balancing market
-    @variable(Step1_3_1, zeta) #NEW: This is actually the VaR!
-    @variable(Step1_3_1, 0 <= eta[w in W]) #NEW: This is used for the CVaR
+    @variable(Step1_3_2, 0 <= p_DA[t in T] <= P_nom) #Electricity offered in DA market
+    @variable(Step1_3_2, delta_t[w in W, t in T]) #Realised difference in generation and offer in DA, auxiliary
+    @variable(Step1_3_2, 0 <= delta_tup[w in W, t in T]) #Realised production SURPLUS relative to DA offer
+    @variable(Step1_3_2, 0 <= delta_tdown[w in W, t in T]) #Realised production DEFICIT relative to DA offer
+    @variable(Step1_3_2, I_B[w in W, t in T]) #The profit balance in balancing market
+    @variable(Step1_3_2, zeta) #NEW: This is actually the VaR!
+    @variable(Step1_3_2, 0 <= eta[w in W]) #NEW: This is used for the CVaR
 
-    @objective(Step1_3_1, Max,
+    @objective(Step1_3_2, Max,
             (1-beta[b])*(sum( prob[w] * sum( lambda_DA[w,t]*p_DA[t] + I_B[w,t] for t in T) for w in W))
                 + beta[b]*(zeta - (1/(1-alpha))*sum(prob[w] * eta[w] for w in W))) #NEW: disregarding 'beta' this term is the CVaR!
 
-    @constraint(Step1_3_1, [w in W, t in T],
+    @constraint(Step1_3_2, [w in W, t in T],
                 delta_t[w,t] == p_real[w,t] - p_DA[t])
-    @constraint(Step1_3_1, [w in W, t in T],
-                I_B[w,t] <= (Imbalance[w,t]*0.9 + (1-Imbalance[w,t])*1.2) * lambda_DA[w,t] * delta_t[w,t])
-                #Firstly, in the purple parenthesis, the balancing market price is set by the system imbalance
-                #Secondly, the sign of delta_t[w,t] then tells us whether the WF is earning or losing money @ the balancing market price
-    @constraint(Step1_3_1, [w in W],
+    @constraint(Step1_3_2, [w in W, t in T],
+                delta_t[w,t] == delta_tup[w,t] - delta_tdown[w,t])
+    @constraint(Step1_3_2, [w in W, t in T],
+                I_B[w,t] <= -Imbalance[w,t]*lambda_DA[w,t]*delta_tdown[w,t] #System surplus, WF deficit, pay @ DA price
+                -(1-Imbalance[w,t])*1.2*lambda_DA[w,t]*delta_tdown[w,t] #System deficit, WF deficit, pay @ 1.2*DA price
+                +Imbalance[w,t]*0.9*lambda_DA[w,t]*delta_tup[w,t] #System surplus, WF surplus, earn @ 0.9*DA price
+                +(1-Imbalance[w,t])*lambda_DA[w,t]*delta_tup[w,t]) #System deficit, WF surplus, earn @ DA price
+
+    @constraint(Step1_3_2, [w in W],
                 -sum( lambda_DA[w,t]*p_DA[t] + I_B[w,t] for t in T) + zeta - eta[w] <= 0)
     #************************************************************************
 
     #************************************************************************
     # SOLVE
-    set_time_limit_sec(Step1_3_1,30)
-    solution = optimize!(Step1_3_1)
-    println("Termination status: $(termination_status(Step1_3_1))")
+    set_time_limit_sec(Step1_3_2,30)
+    solution = optimize!(Step1_3_2)
+    println("Termination status: $(termination_status(Step1_3_2))")
     #************************************************************************
 
     #************************************************************************
     # SOLUTION
-    if termination_status(Step1_3_1) == MOI.OPTIMAL
+    if termination_status(Step1_3_2) == MOI.OPTIMAL
         println("RESULTS:")
-        printstyled("objective = $(objective_value(Step1_3_1))\n";color= :blue)
+        printstyled("objective = $(objective_value(Step1_3_2))\n";color= :blue)
     end
     #************************************************************************
     DA_decs[b,:] = value.(p_DA)
@@ -76,14 +82,15 @@ end
 
 #************************************************************************
 # PLOT - Markowitz curve
-scatter(CVaR,Profit, label=false, color=:blue, markershape=:x)
-plot_Markowitz = plot!(CVaR,Profit, label="Single-price", color=:blue, xlabel="CVaR [€]", ylabel="Profit [€]", title="Markowitz curve")
+scatter(CVaR,Profit, label=false, color=:red, markershape=:x)
+plot_Markowitz = plot!(CVaR,Profit, label="Two-price", color=:red, xlabel="CVaR [€]", ylabel="Profit [€]", title="Markowitz curve")
 hcat(beta, DA_decs)
 label_DA_decs = permutedims(["h=$t" for t in T]) #we need row vector
-ylimit = max(maximum(DA_decs[:,1:5]), maximum(DA_decs[:,7:24])) #otherwise the plot is not as useful
+ylimit = max(maximum(DA_decs[:,1:5]), maximum(DA_decs[:,7:24])) #only 6 was at 200, so otherwise the plot is not as useful
 plot_DA = plot(beta, DA_decs, label=label_DA_decs, xlabel="beta [-]", ylabel="pDA [MWh]",
     ylim=[0,ylimit], title="Trend in DA decisions", legend=:topright)
 plot(plot_Markowitz, plot_DA, layout=(1,2), dpi=1000, size=(900,500), margin=5Plots.mm)
+#savefig("Markowitz_DAdecs.png")
 #************************************************************************
 
 #************************************************************************ - this only works for the last beta value
