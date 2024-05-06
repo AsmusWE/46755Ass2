@@ -12,9 +12,18 @@ num_samples = 250
 samples = sample(W_tot, num_samples, replace=false) #collect(1:250) #
 W = collect(1:num_samples)
 
-lambda_DA = scenarios[samples,:,1]
-p_real = scenarios[samples,:,2] 
+#lambda_DA = scenarios[samples,:,1]
+lambda_DA = scenarios[W,:,1]
+#p_real = scenarios[samples,:,2] 
+p_real = scenarios[W,:,2] 
 Imbalance = scenarios[samples,:,3]
+# Imbalance[:,1] .= 1
+# Imbalance[181:240,1] .= 0
+# Imbalance[61:83,1] .= 0 #0.668, h=1, p_DA = 0
+# Imbalance[:,1] .= 1
+# Imbalance[1:60,1] .= 0
+# Imbalance[61:83,1] .= 0 #0.668, h=1, p_DA = 200
+
 
 prob = ones(num_samples) ./ num_samples 
 P_nom = 200 #MW

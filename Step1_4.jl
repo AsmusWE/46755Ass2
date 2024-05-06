@@ -20,7 +20,9 @@ end
 println("\nSo the average balancing profits for UNSEEN scenarios are: €", round(sum(balancing_prof_unseen)/length(unseen),digits=1))
 println("And for the SEEN scenarios it was: ", round(sum(balancing_prof)/length(seen),digits=1))
 
-histogram(Profits, label="Scenarios", xlabel="Profit [€]", ylabel="Frequency") #add vline at expected price
+#histogram(Profits, label="Scenarios", xlabel="Profit [€]", ylabel="Frequency") #add vline at expected price
+histogram(balancing_prof, label="seen", xlabel="Profit, balancing[€]", ylabel="Frequency", color=:red, normalize=:pdf)
+histogram!(balancing_prof_unseen, label="unseen", color=:blue, alpha=0.67, normalize=:pdf)
 #plot(Profits, label="label", xlabel="Scenario", ylabel="Profit [€]")
 #************************************************************************
 

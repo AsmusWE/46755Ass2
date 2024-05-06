@@ -7,10 +7,12 @@ scenarios = GenScens() #scenarios, t, price prod imbalance
 T = collect(1:24)
 W_tot = collect(1:1200)
 
-num_samples = 250
+num_samples = 250#-1
 
 samples = sample(W_tot, num_samples, replace=false) #collect(1:250)
 W = collect(1:num_samples)
+
+#samples = W
 
 lambda_DA = scenarios[samples,:,1]
 p_real = scenarios[samples,:,2] 
@@ -29,6 +31,7 @@ VaR = zeros(betavars+1)
 CVaR = zeros(betavars+1)
 Profit = zeros(betavars+1)
 CVaR_test = zeros(betavars+1)
+CVaR_test_VaR_part = zeros(betavars+1)
 
 for b in 1:betavars+1
     #************************************************************************
@@ -73,7 +76,9 @@ for b in 1:betavars+1
     VaR[b] = value(zeta)
     CVaR[b] = value(zeta) - (1/(1-alpha))*sum(prob[w] * value(eta[w]) for w in W)
     Profit[b] = sum( prob[w] * sum( lambda_DA[w,t]*value(p_DA[t]) + value(I_B[w,t]) for t in T) for w in W)
-    #CVaR_test[b] = VaR[b] - 1/(1-alpha)*VaR[b]*sum(prob[w] for w in W if VaR[b] > sum( lambda_DA[w,t]*value(p_DA[t]) + value(I_B[w,t]) for t in T);init=0) + 1/(1-alpha) * sum( prob[w] * sum( lambda_DA[w,t]*value(p_DA[t]) + value(I_B[w,t]) for t in T) for w in W if value(eta[w]) > 0;init=0)
+    #the two arrays below are used to show some stuff "mathematically"
+    CVaR_test[b] = VaR[b] - 1/(1-alpha) * VaR[b]*sum( prob[w]*(value(eta[w]) > 0 ? 1 : 0) for w in W) + 1/(1-alpha)*sum( prob[w]*(value(eta[w]) > 0 ? 1 : 0)*sum( lambda_DA[w,t]*value(p_DA[t]) + value(I_B[w,t]) for t in T) for w in W)
+    CVaR_test_VaR_part[b] = VaR[b] - 1/(1-alpha) * VaR[b]*sum( prob[w]*(value(eta[w]) > 0 ? 1 : 0) for w in W)
 end
 
 #************************************************************************

@@ -18,7 +18,7 @@ prob = ones(num_samples) ./ num_samples #COMMENT: should not be all scenarios bu
 P_nom = 200 #MW
 
 alpha = 0.9
-beta = 0.5 # code in a way that beta can be increased gradually and the results are saved
+beta = 1.0 # code in a way that beta can be increased gradually and the results are saved
 
 
 #************************************************************************
