@@ -7,8 +7,8 @@ ALSOX_C = solve_ALSOX()
 CVaR_C = solve_CVaR()
 
 Profiles = generate_load_profiles(200) # Shape is [scenarios, minutes]
-TestProfiles = Profiles[51:200]
-
+#TestProfiles = Profiles[51:200]
+TestProfiles = Profiles[1:50]
 
 global ALSOX_fails = 0
 global CVaR_fails = 0

@@ -1,18 +1,20 @@
+using Plots
+using StatsPlots
+
 include("ScenGen2.jl")
 include("Step2_1ALSOX.jl")
 
-# TODO check why ALSOX_C_0 is highest
-# TODO check why ALSOX_C_1 doesn't result in the same as step2_2
-
+profiles = 200
+training_profiles = 50
 p = [0.0 0.1 0.2] # 1-"p90" values
-ALSOX_C_0 = solve_ALSOX(p[1])
-ALSOX_C_1 = solve_ALSOX(p[2])
-ALSOX_C_2 = solve_ALSOX(p[3])
+ALSOX_C_0 = solve_ALSOX(p[1], profiles, training_profiles)
+ALSOX_C_1 = solve_ALSOX(p[2], profiles, training_profiles)
+ALSOX_C_2 = solve_ALSOX(p[3], profiles, training_profiles)
 
 C_vals = [ALSOX_C_0, ALSOX_C_1, ALSOX_C_2]
 
-Profiles = generate_load_profiles(200) # Shape is [scenarios, minutes]
-TestProfiles = Profiles[51:200]
+Profiles = generate_load_profiles(profiles) # Shape is [scenarios, minutes]
+TestProfiles = Profiles[training_profiles+1:end]
 
 ALSOX_fails = Float32[0, 0, 0]
 ALSOX_shortfall = Float32[0, 0, 0]
@@ -31,3 +33,23 @@ for c in range(1,length(C_vals)) # Looping over p90 values
         end
     end
 end
+
+
+PlotProfiles = mapreduce(permutedims, vcat, TestProfiles)
+PlotProfiles = convert(Array{Float64,2}, PlotProfiles)
+
+
+for (i, c_val) in enumerate(C_vals)
+    if i == 1
+        hline([c_val], label="ALSOX_C_$(p[i])", color=i)
+    else
+        hline!([c_val], label="ALSOX_C_$(p[i])", color=i)
+    end
+end
+errorline!(1:60,transpose(PlotProfiles), errorstyle = :plume, ylims = (0, 500), label = "Scenarios")
+
+#plot!(1:60, C_vals, label="ALSOX_C values")
+
+#plot!(TestProfiles ,alpha=0.1, color=:blue)
+#plot!(mean_TestProfiles, label="Mean Test Profiles")
+#plot!(C_vals, label="ALSOX_C values")
