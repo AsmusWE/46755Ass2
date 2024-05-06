@@ -48,7 +48,7 @@ for (i, c_val) in enumerate(C_vals)
         hline!([c_val], label="ALSOX_C_$(p[i])", color=i, linewidth=2)
     end
 end
-errorline!(1:60,transpose(PlotProfiles), errorstyle = :plume, ylims = (0, 500), label = "Scenarios")
+errorline!(1:60,transpose(PlotProfiles), errorstyle = :plume, ylims = (0, 510), label = "Scenarios")
 
 #plot!(1:60, C_vals, label="ALSOX_C values")
 

@@ -3,12 +3,14 @@ include("ScenGen2.jl")
 include("Step2_1ALSOX.jl")
 include("Step2_1CVar.jl")
 
-ALSOX_C = solve_ALSOX()
-CVaR_C = solve_CVaR()
+
+ALSOX_C, ALSOX_C_Time = @timed solve_ALSOX()
+CVaR_C, CVaR_C_Time = @timed solve_CVaR()
+
 
 Profiles = generate_load_profiles(200) # Shape is [scenarios, minutes]
-#TestProfiles = Profiles[51:200]
-TestProfiles = Profiles[1:50]
+TestProfiles = Profiles[51:200]
+#TestProfiles = Profiles[1:50]
 
 global ALSOX_fails = 0
 global CVaR_fails = 0
