@@ -4,9 +4,9 @@ using Plots
 include("ScenGen2.jl")
 
 
-function solve_relaxed(q)
-    Profiles = generate_load_profiles(200) # Shape is [scenarios, minutes]
-    F_up = Profiles[1:50] 
+function solve_relaxed(q, profiles, training_profiles)
+    Profiles = generate_load_profiles(profiles) # Shape is [scenarios, minutes]
+    F_up = Profiles[1:training_profiles] 
     M = 300 # Largest possible violation
     len_m = 60
     Ω = 50
@@ -44,24 +44,26 @@ function solve_relaxed(q)
 end
 
 
-function solve_ALSOX(ϵ = 0.1)
+function solve_ALSOX(ϵ = 0.1, profiles = 200, training_profiles = 50)
     delta = 10^(-5)
-    samples = 50
+    samples = training_profiles
 
-    global q_low = 0
-    global q_high = ϵ * samples^2
+    q_low = 0
+    q_high = ϵ * samples^2
+    q = 0
 
     while q_high-q_low >= delta
-        global q = (q_low + q_high) / 2
-        solution = solve_relaxed(q)[1]
+        q = (q_low + q_high) / 2
+        solution = solve_relaxed(q, profiles, training_profiles)[1]
         count_zeros = sum(solution .== 0)
-        if count_zeros >= 1-ϵ
-            global q_low = q
+        count_zeros = count_zeros/(samples*60)
+        if count_zeros >= (1-ϵ)
+            q_low = q
         else
-            global q_high = q
+            q_high = q
         end
     end
-    best_c = solve_relaxed(q)[2]
+    best_c = solve_relaxed(q, profiles, training_profiles)[2]
     return best_c
 end
 
