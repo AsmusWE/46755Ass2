@@ -7,7 +7,7 @@ unseen = W_tot[ [!(W_tot[s] in samples) for s in W_tot] ]
 x = sum(DA_prof) / num_samples
 
 lambda_DA = scenarios[:,:,1]
-p_real = scenarios[:,:,2] #COMMENT: should be normalized to the 200 MW wind farm size in the assignment!!
+p_real = scenarios[:,:,2] 
 Imbalance = scenarios[:,:,3]
 
 #************************************************************************

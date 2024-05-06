@@ -13,10 +13,10 @@ samples = sample(W_tot, num_samples, replace=false) #collect(1:250) #
 W = collect(1:num_samples)
 
 lambda_DA = scenarios[samples,:,1]
-p_real = scenarios[samples,:,2] #COMMENT: should be normalized to the 200 MW wind farm size in the assignment!!
+p_real = scenarios[samples,:,2] 
 Imbalance = scenarios[samples,:,3]
 
-prob = ones(num_samples) ./ num_samples #COMMENT: should not be all scenarios but only 250 out of 1200!!
+prob = ones(num_samples) ./ num_samples 
 P_nom = 200 #MW
 
 #************************************************************************

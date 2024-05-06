@@ -13,13 +13,13 @@ samples = sample(W_tot, num_samples, replace=false) #collect(1:250)
 W = collect(1:num_samples)
 
 lambda_DA = scenarios[samples,:,1]
-p_real = scenarios[samples,:,2] #COMMENT: should be normalized to the 200 MW wind farm size in the assignment!!
+p_real = scenarios[samples,:,2] 
 Imbalance = scenarios[samples,:,3]
 
-prob = ones(num_samples) ./ num_samples #COMMENT: should not be all scenarios but only 250 out of 1200!!
+prob = ones(num_samples) ./ num_samples 
 P_nom = 200 #MW
 
-alpha = 0.9
+alpha = 0.90
 betavars = 10
 beta = collect(Float64,0:1:10) ./ betavars # code in a way that beta can be increased gradually and the results are saved
 #beta = collect(Float64,0:1:10) ./ (betavars*1000)
@@ -28,6 +28,7 @@ DA_decs = zeros(betavars+1,24)
 VaR = zeros(betavars+1)
 CVaR = zeros(betavars+1)
 Profit = zeros(betavars+1)
+CVaR_test = zeros(betavars+1)
 
 for b in 1:betavars+1
     #************************************************************************
@@ -41,7 +42,7 @@ for b in 1:betavars+1
     @variable(Step1_3_1, 0 <= eta[w in W]) #NEW: This is used for the CVaR
 
     @objective(Step1_3_1, Max,
-            (1-beta[b])*(sum( prob[w] * sum( lambda_DA[w,t]*p_DA[t] + I_B[w,t] for t in T) for w in W))
+            (1-beta[b]) * sum( prob[w] * sum( lambda_DA[w,t]*p_DA[t] + I_B[w,t] for t in T) for w in W)
                 + beta[b]*(zeta - (1/(1-alpha))*sum(prob[w] * eta[w] for w in W))) #NEW: disregarding 'beta' this term is the CVaR!
 
     @constraint(Step1_3_1, [w in W, t in T],
@@ -72,6 +73,7 @@ for b in 1:betavars+1
     VaR[b] = value(zeta)
     CVaR[b] = value(zeta) - (1/(1-alpha))*sum(prob[w] * value(eta[w]) for w in W)
     Profit[b] = sum( prob[w] * sum( lambda_DA[w,t]*value(p_DA[t]) + value(I_B[w,t]) for t in T) for w in W)
+    #CVaR_test[b] = VaR[b] - 1/(1-alpha)*VaR[b]*sum(prob[w] for w in W if VaR[b] > sum( lambda_DA[w,t]*value(p_DA[t]) + value(I_B[w,t]) for t in T);init=0) + 1/(1-alpha) * sum( prob[w] * sum( lambda_DA[w,t]*value(p_DA[t]) + value(I_B[w,t]) for t in T) for w in W if value(eta[w]) > 0;init=0)
 end
 
 #************************************************************************
