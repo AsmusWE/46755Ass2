@@ -15,12 +15,12 @@ Imbalance = scenarios[:,:,3]
 x = zeros(W_tot[end]) #DA profit, unseen
 y = zeros(W_tot[end]) #Balancing profit, unseen
 delta = zeros(W_tot[end],T[end])
-balancing_prof_unseen = zeros(W_tot[end])
 for w in unseen
     x[w] = sum(lambda_DA[w,t] * p_DA_star[t] for t in T)
     delta[w,:] = p_real[w,:] .- p_DA_star
     y[w] = sum( (Imbalance[w,t]*0.9 + (1-Imbalance[w,t])*1.2) * lambda_DA[w,t] * delta[w,t] for t in T)
 end
+
 println("\n\n\nThe expected profit (SEEN) is €$(round((objective_value(Step1_1)),digits=2))")
 println("The average profit (UNseen) is €$(round( (sum(x)+sum(y)) / length(unseen) ,digits=2))")
 
@@ -61,10 +61,23 @@ Imbalance = scenarios[:,:,3]
 x_2 = zeros(W_tot[end]) #DA profit, unseen
 y_2 = zeros(W_tot[end]) #Balancing profit, unseen
 delta_2 = zeros(W_tot[end],T[end])
+delta_up = zeros(W_tot[end],T[end])
+delta_down = zeros(W_tot[end],T[end])
+balancing_prof_unseen = zeros(W_tot[end])
 for w in unseen
     x_2[w] = sum(lambda_DA[w,t] * p_DA_star_2[t] for t in T)
     delta_2[w,:] = p_real[w,:] .- p_DA_star_2
-    y_2[w] = sum( (Imbalance[w,t]*0.9 + (1-Imbalance[w,t])*1.2) * lambda_DA[w,t] * delta_2[w,t] for t in T)
+    for t in T
+        if delta_2[w,t] > 0
+            delta_up[w,t] = delta[w,t]
+        else
+            delta_down[w,t] = -delta[w,t]
+        end
+    end
+    y_2[w] = sum( -Imbalance[w,t]*lambda_DA[w,t]*delta_down[w,t] #System surplus, WF deficit, pay @ DA price
+    -(1-Imbalance[w,t])*1.2*lambda_DA[w,t]*delta_down[w,t] #System deficit, WF deficit, pay @ 1.2*DA price
+    +Imbalance[w,t]*0.9*lambda_DA[w,t]*delta_up[w,t] #System surplus, WF surplus, earn @ 0.9*DA price
+    +(1-Imbalance[w,t])*lambda_DA[w,t]*delta_up[w,t] for t in T) #System deficit, WF surplus, earn @ DA price
 end
 println("\n\n\nThe expected profit (SEEN) is €$(round((objective_value(Step1_2)),digits=2))")
 println("The average profit (UNseen) is €$(round( (sum(x_2)+sum(y_2)) / length(unseen) ,digits=2))")

@@ -9,7 +9,7 @@ W_tot = collect(1:1200)
 
 num_samples = 250
 
-#Random.seed!(4321) #set to overrule 'Random.seed!(1234)' from 'Scengen.jl'
+Random.seed!(2300) #1, 23, 1212, 4242  #set to overrule 'Random.seed!(1234)' from 'Scengen.jl'
 
 samples = sample(W_tot, num_samples, replace=false) #collect(1:250) #
 W = collect(1:num_samples)
