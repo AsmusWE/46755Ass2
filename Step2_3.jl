@@ -6,18 +6,20 @@ include("Step2_1ALSOX.jl")
 
 profiles = 200
 training_profiles = 50
-p = [0.0 0.1 0.2] # 1-"p90" values
+p = [0.0 0.1 0.2 0.5 1] # 1-"p90" values
 ALSOX_C_0 = solve_ALSOX(p[1], profiles, training_profiles)
 ALSOX_C_1 = solve_ALSOX(p[2], profiles, training_profiles)
 ALSOX_C_2 = solve_ALSOX(p[3], profiles, training_profiles)
+ALSOX_C_5 = solve_ALSOX(p[4], profiles, training_profiles)
+ALSOX_C_10 = solve_ALSOX(p[5], profiles, training_profiles)
 
-C_vals = [ALSOX_C_0, ALSOX_C_1, ALSOX_C_2]
+C_vals = [ALSOX_C_0, ALSOX_C_1, ALSOX_C_2, ALSOX_C_5, ALSOX_C_10]
 
 Profiles = generate_load_profiles(profiles) # Shape is [scenarios, minutes]
 TestProfiles = Profiles[training_profiles+1:end]
 
-ALSOX_fails = Float32[0, 0, 0]
-ALSOX_shortfall = Float32[0, 0, 0]
+ALSOX_fails = Float32[0, 0, 0, 0, 0]
+ALSOX_shortfall = Float32[0, 0, 0, 0, 0]
 
 for c in range(1,length(C_vals)) # Looping over p90 values
     for i in TestProfiles # Looping over scenarios
@@ -41,9 +43,9 @@ PlotProfiles = convert(Array{Float64,2}, PlotProfiles)
 
 for (i, c_val) in enumerate(C_vals)
     if i == 1
-        hline([c_val], label="ALSOX_C_$(p[i])", color=i)
-    else
-        hline!([c_val], label="ALSOX_C_$(p[i])", color=i)
+        hline([c_val], label="ALSOX_C_$(p[i])", color=i, linewidth=2)
+        else
+        hline!([c_val], label="ALSOX_C_$(p[i])", color=i, linewidth=2)
     end
 end
 errorline!(1:60,transpose(PlotProfiles), errorstyle = :plume, ylims = (0, 500), label = "Scenarios")
