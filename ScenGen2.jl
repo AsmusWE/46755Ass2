@@ -1,6 +1,6 @@
 using Random
-Random.seed!(1234)
 function generate_load_profiles(num_profiles)
+    Random.seed!(123)
     profiles = []
     for _ in 1:num_profiles
         profile = []

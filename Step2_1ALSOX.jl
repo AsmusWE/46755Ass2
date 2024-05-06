@@ -48,17 +48,18 @@ function solve_ALSOX(ϵ = 0.1)
     delta = 10^(-5)
     samples = 50
 
-    global q_low = 0
-    global q_high = ϵ * samples^2
+    q_low = 0
+    q_high = ϵ * samples^2
+    q = 0
 
     while q_high-q_low >= delta
-        global q = (q_low + q_high) / 2
+        q = (q_low + q_high) / 2
         solution = solve_relaxed(q)[1]
         count_zeros = sum(solution .== 0)
         if count_zeros >= 1-ϵ
-            global q_low = q
+            q_low = q
         else
-            global q_high = q
+            q_high = q
         end
     end
     best_c = solve_relaxed(q)[2]
