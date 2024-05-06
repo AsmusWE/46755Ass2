@@ -4,6 +4,8 @@ using Plots, Distributions
 include("ScenGen.jl")
 scenarios = GenScens() #scenarios, t, price prod imbalance
 
+#Random.seed!(2222)
+
 T = collect(1:24)
 W_tot = collect(1:1200)
 
@@ -63,9 +65,10 @@ end
 Profits = zeros(W[end])
 delta_tup = zeros(W[end],T[end])
 delta_tdown = zeros(W[end],T[end]) #could have been declared inside loop to avoid the W-dimension, but to be consistent with model formulation it is placed out here
-
+DA_prof = zeros(W[end])
+balancing_prof = zeros(W[end])
 for w in W
-    DA_prof = sum(lambda_DA[w,t] * value(p_DA[t]) for t in T)
+    DA_prof[w] = sum(lambda_DA[w,t] * value(p_DA[t]) for t in T)
     #delta_t[w,t] == p_real[w,t] - p_DA[t]
     #delta_t[w,t] == delta_tup[w,t] - delta_tdown[w,t]
     for t in T
@@ -77,15 +80,15 @@ for w in W
             delta_tup[w,t] = 0
         end
     end
-    balancing_prof = sum(
+    balancing_prof[w] = sum(
                         -Imbalance[w,t]*lambda_DA[w,t]*delta_tdown[w,t] #System surplus, WF deficit, pay @ DA price
                         -(1-Imbalance[w,t])*1.2*lambda_DA[w,t]*delta_tdown[w,t] #System deficit, WF deficit, pay @ 1.2*DA price
                         +Imbalance[w,t]*0.9*lambda_DA[w,t]*delta_tup[w,t] #System surplus, WF surplus, earn @ 0.9*DA price
                         +(1-Imbalance[w,t])*lambda_DA[w,t]*delta_tup[w,t] for t in T)
-    Profits[w] = DA_prof + balancing_prof
+    Profits[w] = DA_prof[w] + balancing_prof[w]
 end
 print("So the average profits are: €", round(sum(Profits)/W[end],digits=1))
 
-histogram(Profits, label="Scenarios", xlabel="Profit [€]", ylabel="Frequency") #add vline at expected price
+histogram(Profits, label="Scenarios", xlabel="Profit [€]", ylabel="Frequency",bins=25) #add vline at expected price
 #plot(Profits, label="label", xlabel="Scenario", ylabel="Profit [€]")
 #************************************************************************

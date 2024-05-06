@@ -1,5 +1,5 @@
 using JuMP, Gurobi
-using Plots
+using Plots, Distributions
 
 include("ScenGen.jl")
 scenarios = GenScens() #scenarios, t, price prod imbalance
@@ -83,13 +83,21 @@ end
 #************************************************************************
 # PLOT - Markowitz curve
 scatter(CVaR,Profit, label=false, color=:red, markershape=:x)
-plot_Markowitz = plot!(CVaR,Profit, label="Two-price", color=:red, xlabel="CVaR [€]", ylabel="Profit [€]", title="Markowitz curve")
+plot_Markowitz = plot!(CVaR,Profit, label="Dual-price", color=:red, xlabel="CVaR [€]", ylabel="Profit [€]", title="Markowitz curve")
 hcat(beta, DA_decs)
 label_DA_decs = permutedims(["h=$t" for t in T]) #we need row vector
 ylimit = max(maximum(DA_decs[:,1:5]), maximum(DA_decs[:,7:24])) #only 6 was at 200, so otherwise the plot is not as useful
-plot_DA = plot(beta, DA_decs, label=label_DA_decs, xlabel="beta [-]", ylabel="pDA [MWh]",
+plot_DA = plot(beta, DA_decs, label=label_DA_decs, xlabel="β [-]", ylabel="pDA [MWh]",
     ylim=[0,ylimit], title="Trend in DA decisions", legend=:topright)
-plot(plot_Markowitz, plot_DA, layout=(1,2), dpi=1000, size=(900,500), margin=5Plots.mm)
+
+plot_sumDA = plot(beta, sum(DA_decs,dims=2), label=label_DA_decs, xlabel="β [-]", ylabel="pDA [MWh]",
+    title="Trend in DA decisions", legend=:topright)
+
+plot(plot_Markowitz, plot_sumDA, layout=(1,2), dpi=1000, size=(900,500), margin=5Plots.mm)
+
+plot_Imb = plot(mean(Imbalance,dims=1)[1,:], legend=false)
+hline!([2/3])
+plot(plot_DA, plot_Imb, layout=(1,2), dpi=1000, size=(900,500), margin=5Plots.mm)
 #savefig("Markowitz_DAdecs.png")
 #************************************************************************
 

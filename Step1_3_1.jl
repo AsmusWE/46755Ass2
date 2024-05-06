@@ -1,5 +1,5 @@
 using JuMP, Gurobi
-using Plots
+using Plots, Distributions
 
 include("ScenGen.jl")
 scenarios = GenScens() #scenarios, t, price prod imbalance
@@ -22,8 +22,8 @@ prob = ones(num_samples) ./ num_samples
 P_nom = 200 #MW
 
 alpha = 0.90
-betavars = 10
-beta = collect(Float64,0:1:10) ./ betavars # code in a way that beta can be increased gradually and the results are saved
+betavars = 20
+beta = collect(Float64,0:1:20) ./ betavars # code in a way that beta can be increased gradually and the results are saved
 #beta = collect(Float64,0:1:10) ./ (betavars*1000)
 
 DA_decs = zeros(betavars+1,24)
@@ -88,9 +88,15 @@ plot_Markowitz = plot!(CVaR,Profit, label="Single-price", color=:blue, xlabel="C
 hcat(beta, DA_decs)
 label_DA_decs = permutedims(["h=$t" for t in T]) #we need row vector
 ylimit = max(maximum(DA_decs[:,1:5]), maximum(DA_decs[:,7:24])) #otherwise the plot is not as useful
-plot_DA = plot(beta, DA_decs, label=label_DA_decs, xlabel="beta [-]", ylabel="pDA [MWh]",
+plot_DA = plot(beta, DA_decs, label=label_DA_decs, xlabel="β [-]", ylabel="pDA [MWh]",
     ylim=[0,ylimit], title="Trend in DA decisions", legend=:topright)
-plot(plot_Markowitz, plot_DA, layout=(1,2), dpi=1000, size=(900,500), margin=5Plots.mm)
+plot_sumDA = plot(beta, sum(DA_decs,dims=2), label=label_DA_decs, xlabel="β [-]", ylabel="pDA [MWh]",
+    title="Trend in DA decisions", legend=:topright)
+plot(plot_Markowitz, plot_sumDA, layout=(1,2), dpi=1000, size=(900,500), margin=5Plots.mm)
+
+plot_Imb = plot(mean(Imbalance,dims=1)[1,:], legend=false)
+hline!([2/3])
+plot(plot_DA, plot_Imb, layout=(1,2), dpi=1000, size=(900,500), margin=5Plots.mm)
 #************************************************************************
 
 #************************************************************************ - this only works for the last beta value

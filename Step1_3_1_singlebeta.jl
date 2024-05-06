@@ -1,4 +1,5 @@
 using JuMP, Gurobi
+using Plots, Distributions
 include("ScenGen.jl")
 scenarios = GenScens() #scenarios, t, price prod imbalance
 

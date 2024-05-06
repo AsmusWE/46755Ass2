@@ -9,13 +9,13 @@ W_tot = collect(1:1200)
 
 num_samples = 250
 
+#Random.seed!(4321) #set to overrule 'Random.seed!(1234)' from 'Scengen.jl'
+
 samples = sample(W_tot, num_samples, replace=false) #collect(1:250) #
 W = collect(1:num_samples)
 
-#lambda_DA = scenarios[samples,:,1]
-lambda_DA = scenarios[W,:,1]
-#p_real = scenarios[samples,:,2] 
-p_real = scenarios[W,:,2] 
+lambda_DA = scenarios[samples,:,1]
+p_real = scenarios[samples,:,2] 
 Imbalance = scenarios[samples,:,3]
 # Imbalance[:,1] .= 1
 # Imbalance[181:240,1] .= 0
@@ -74,7 +74,7 @@ for w in W
 end
 print("So the average profits are: €", round(sum(Profits)/W[end],digits=1))
 
-histogram(Profits, label="Scenarios", xlabel="Profit [€]", ylabel="Frequency") #add vline at expected price
+histogram(Profits, label="Scenarios", xlabel="Profit [€]", ylabel="Frequency", bins=25) #add vline at expected price
 #plot(Profits, label="label", xlabel="Scenario", ylabel="Profit [€]")
 #************************************************************************
 
