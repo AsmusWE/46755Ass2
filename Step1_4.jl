@@ -15,7 +15,7 @@ p_real_l = reshape(p_real[seen,:], (num_samples*T[end],1))
 lambda_DA_l = reshape(lambda_DA[seen,:], (num_samples*T[end],1))
 hist_seen=histogram2d(p_real_l, lambda_DA_l, show_empty_bins=true,
     normalize=:pdf, color=:plasma, margin=5Plots.mm) #bins=(45, 25),
-title!("Diversity of (SEEN) input - 2D Histogram")
+title!("Diversity of SEEN input - 2D Histogram")
 xlabel!("Power generation [MW]")
 ylabel!("Spot price [€/MWh]")
 
@@ -26,7 +26,7 @@ hist_unseen=histogram2d(p_real_l_unseen, lambda_DA_l_unseen, show_empty_bins=tru
 title!("Diversity of UNseen input - 2D Histogram")
 xlabel!("Power generation [MW]")
 ylabel!("Spot price [€/MWh]")
-plot(hist_seen,hist_unseen,layout=(1,2), size=(1200,550))
+plot(hist_seen,hist_unseen,layout=(1,2), size=(1200,550), dpi=800)
 
 plot(mean(p_real[seen,:],dims=1)[1,:], label="seen", color=:red)
 plot!(mean(p_real[unseen,:],dims=1)[1,:], label="unseen", color=:blue)

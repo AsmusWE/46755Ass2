@@ -94,37 +94,38 @@ end
 
 #************************************************************************
 # PLOT - Markowitz curve
-scatter(CVaR,Profit, label=false, color=:red, markershape=:x)
-plot_Markowitz = plot!(CVaR,Profit, label="Dual-price", color=:red, xlabel="CVaR [€]", ylabel="Profit [€]", title="Markowitz curve")
+scatter(CVaR,Profit, label=false, markershape=:x, color=palette(:tab10))
+plot_Markowitz = plot!(CVaR,Profit, label="Dual-price", xlabel="CVaR [€]", ylabel="Profit [€]", color=palette(:tab10), title="Markowitz curve")
 hcat(beta, DA_decs)
 label_DA_decs = permutedims(["h=$t" for t in T]) #we need row vector
 ylimit = max(maximum(DA_decs[:,1:5]), maximum(DA_decs[:,7:24])) #only 6 was at 200, so otherwise the plot is not as useful
-plot_DA = plot(beta, DA_decs, label=label_DA_decs, xlabel="β [-]", ylabel="pDA [MWh]",
+plot_DA = plot(beta, DA_decs, label=label_DA_decs, xlabel="β [-]", ylabel="pDA [MWh]", color=palette(:tab10),
     ylim=[0,ylimit], title="Trend in DA decisions", legend=:topright)
 
-plot_sumDA = plot(beta, sum(DA_decs,dims=2), label=label_DA_decs, xlabel="β [-]", ylabel="pDA [MWh]",
+plot_sumDA = plot(beta, sum(DA_decs,dims=2), label=false, xlabel="β [-]", color=palette(:tab10), ylabel="pDA [MWh]",
     title="Trend in DA decisions", legend=:topright)
 
-plot(plot_Markowitz, plot_sumDA, layout=(1,2), dpi=1000, size=(900,500), margin=5Plots.mm)
+plot(plot_Markowitz, plot_sumDA, layout=(1,2), dpi=800, size=(900,500), margin=5Plots.mm)
 
-plot_Imb = plot(mean(Imbalance,dims=1)[1,:], legend=false)
+plot_Imb = plot(mean(Imbalance,dims=1)[1,:], legend=false, color=palette(:tab10))
 hline!([2/3])
-plot(plot_DA, plot_Imb, layout=(1,2), dpi=1000, size=(900,500), margin=5Plots.mm)
+plot(plot_DA, plot_Imb, layout=(1,2), dpi=800, size=(900,500), margin=5Plots.mm)
 #savefig("Markowitz_DAdecs.png")
 #************************************************************************
 
 #************************************************************************
 # PLOT - profit distribution over scenarios given varying betas
-beta_list = [0.0 0.2 0.5 1.0]
+beta_list = [0.0 0.1 0.5 1.0]
 beta_ind_list = [findfirst(beta .== beta_list[b]) for b in 1:length(beta_list)]
 hists=repeat([histogram(mean(lambda_DA,dims=1)[1,:])], length(hist_list)) #make hist array
 for b in 1:length(beta_list)
     hists[b] = histogram(Profits_w[beta_ind_list[b],:], label="Profit distribution β=$(beta_list[b])",
-    bins=50, normalize=true, xlabel="Profit (total) [€]", ylabel="Probability")
-    vline!([VaR[beta_ind_list[b]]], label="VaR", color=:red)
+    bins=50, normalize=true, xlabel="Profit (total) [€]", ylabel="Probability", color=palette(:tab10))
+    vline!([VaR[beta_ind_list[b]]], label="VaR", linewidth=2)
 end
-plot(hists..., layout=(2,2), size=(950,550),margin=5Plots.mm, title="Dual-price")
+plot(hists..., layout=(2,2), size=(950,550),margin=5Plots.mm, dpi=800)
 
-histogram(Profits_w[1,:], label="Profit β=$(beta[1])", color=:blue)
-histogram!(Profits_w[11,:], label="Profit β=$(beta[11])", color=:red, alpha=0.67)
+histogram(Profits_w[1,:], label="Profit β=$(beta[1])", color=palette(:tab10), bins=25, normalize=:true, dpi=800)
+histogram!(Profits_w[11,:], label="Profit β=$(beta[11])", alpha=0.75, bins=25,normalize=:true, 
+    xlabel="Profit [total] €", ylabel="Probability", title="Dual-price", dpi=800)
 #************************************************************************
