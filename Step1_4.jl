@@ -10,6 +10,29 @@ lambda_DA = scenarios[:,:,1]
 p_real = scenarios[:,:,2] 
 Imbalance = scenarios[:,:,3]
 
+#PLOTTING and inspecting the data###################################
+p_real_l = reshape(p_real[seen,:], (num_samples*T[end],1))
+lambda_DA_l = reshape(lambda_DA[seen,:], (num_samples*T[end],1))
+hist_seen=histogram2d(p_real_l, lambda_DA_l, show_empty_bins=true,
+    normalize=:pdf, color=:plasma, margin=5Plots.mm) #bins=(45, 25),
+title!("Diversity of (SEEN) input - 2D Histogram")
+xlabel!("Power generation [MW]")
+ylabel!("Spot price [€/MWh]")
+
+p_real_l_unseen = reshape(p_real[unseen,:], (length(unseen)*T[end],1))
+lambda_DA_l_unseen = reshape(lambda_DA[unseen,:], (length(unseen)*T[end],1))
+hist_unseen=histogram2d(p_real_l_unseen, lambda_DA_l_unseen, show_empty_bins=true,
+    normalize=:pdf, color=:plasma, margin=5Plots.mm)#bins=(45, 25),
+title!("Diversity of UNseen input - 2D Histogram")
+xlabel!("Power generation [MW]")
+ylabel!("Spot price [€/MWh]")
+plot(hist_seen,hist_unseen,layout=(1,2), size=(1200,550))
+
+plot(mean(p_real[seen,:],dims=1)[1,:], label="seen", color=:red)
+plot!(mean(p_real[unseen,:],dims=1)[1,:], label="unseen", color=:blue)
+####################################################################
+
+
 #************************************************************************
 # CALCULATIONS - average balancing profit in each scenario
 x = zeros(W_tot[end]) #DA profit, unseen
@@ -30,11 +53,11 @@ println("The average earnings in the DA market for UNseen scenarios is €$(roun
 println("\nThe expected profit in the BALANCING market for SEEN scenarios is: €", round(sum(balancing_prof)/length(seen),digits=1))
 println("The average profit in the BALANCING market for UNseen scenarios are: €", round(sum(y)/length(unseen),digits=1))
 
-#histogram(Profits, label="Scenarios", xlabel="Profit [€]", ylabel="Frequency") #add vline at expected price
-histogram(Profits, label="seen", xlabel="Profit, balancing[€]", ylabel="Frequency", color=:red, normalize=:true, bins=25)
+#histogram(Profits, label="Scenarios", xlabel="Profit [€]", ylabel="Probability") #add vline at expected price
+histogram(Profits, label="seen", xlabel="Profit, balancing[€]", ylabel="Probability", color=:red, normalize=:true, bins=25)
 histogram!([x+y], label="unseen", color=:blue, alpha=0.67, normalize=:true, bins=25, dpi=800)
 
-histogram(balancing_prof, label="seen", xlabel="Profit, balancing[€]", ylabel="Frequency", color=:red, normalize=:true, bins=25)
+histogram(balancing_prof, label="seen", xlabel="Profit, balancing[€]", ylabel="Probability", color=:red, normalize=:true, bins=25)
 histogram!(y, label="unseen", color=:blue, alpha=0.67, normalize=:true, bins=25, dpi=800)
 #plot(Profits, label="label", xlabel="Scenario", ylabel="Profit [€]")
 #************************************************************************
@@ -88,13 +111,11 @@ println("The average earnings in the DA market for UNseen scenarios is €$(roun
 println("\nThe expected profit in the BALANCING market for SEEN scenarios is: €", round(sum(balancing_prof)/length(seen),digits=1))
 println("The average profit in the BALANCING market for UNseen scenarios are: €", round(sum(y_2)/length(unseen),digits=1))
 
-#histogram(Profits, label="Scenarios", xlabel="Profit [€]", ylabel="Frequency") #add vline at expected price
-histogram(Profits, label="seen", xlabel="Profit (total) [€]", ylabel="Frequency", color=:red, normalize=:true, bins=25)
+#histogram(Profits, label="Scenarios", xlabel="Profit [€]", ylabel="Probability") #add vline at expected price
+histogram(Profits, label="seen", xlabel="Profit (total) [€]", ylabel="Probability", color=:red, normalize=:true, bins=25)
 histogram!([x_2+y_2], label="unseen", color=:blue, alpha=0.67, normalize=:true, bins=25, dpi=800)
 
-histogram(balancing_prof, label="seen", xlabel="Profit (balancing) [€]", ylabel="Frequency", color=:red, normalize=:true, bins=25)
+histogram(balancing_prof, label="seen", xlabel="Profit (balancing) [€]", ylabel="Probability", color=:red, normalize=:true, bins=25)
 histogram!(y_2, label="unseen", color=:blue, alpha=0.67, normalize=:true, bins=25, dpi=800)
 
-plot(mean(p_real[seen,:],dims=1)[1,:], label="seen", color=:red)
-plot!(mean(p_real[unseen,:],dims=1)[1,:], label="unseen", color=:blue)
 

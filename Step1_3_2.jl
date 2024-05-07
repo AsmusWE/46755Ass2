@@ -29,13 +29,17 @@ VaR = zeros(betavars+1)
 CVaR = zeros(betavars+1)
 Profit = zeros(betavars+1)
 
+Profits_w = zeros(betavars+1,W[end])
+DA_prof_w = zeros(betavars+1,W[end])
+balancing_prof_w = zeros(betavars+1,W[end])
+
 for b in 1:betavars+1
     #************************************************************************
     # MODEL        
     Step1_3_2 = Model(Gurobi.Optimizer)
 
     @variable(Step1_3_2, 0 <= p_DA[t in T] <= P_nom) #Electricity offered in DA market
-    @variable(Step1_3_2, delta_t[w in W, t in T]) #Realised difference in generation and offer in DA, auxiliary
+    #@variable(Step1_3_2, delta_t[w in W, t in T]) #Realised difference in generation and offer in DA, auxiliary
     @variable(Step1_3_2, 0 <= delta_tup[w in W, t in T]) #Realised production SURPLUS relative to DA offer
     @variable(Step1_3_2, 0 <= delta_tdown[w in W, t in T]) #Realised production DEFICIT relative to DA offer
     @variable(Step1_3_2, I_B[w in W, t in T]) #The profit balance in balancing market
@@ -46,10 +50,12 @@ for b in 1:betavars+1
             (1-beta[b])*(sum( prob[w] * sum( lambda_DA[w,t]*p_DA[t] + I_B[w,t] for t in T) for w in W))
                 + beta[b]*(zeta - (1/(1-alpha))*sum(prob[w] * eta[w] for w in W))) #NEW: disregarding 'beta' this term is the CVaR!
 
+    #@constraint(Step1_3_2, [w in W, t in T],
+    #            delta_t[w,t] == p_real[w,t] - p_DA[t])
+    #@constraint(Step1_3_2, [w in W, t in T],
+    #            delta_t[w,t] == delta_tup[w,t] - delta_tdown[w,t])
     @constraint(Step1_3_2, [w in W, t in T],
-                delta_t[w,t] == p_real[w,t] - p_DA[t])
-    @constraint(Step1_3_2, [w in W, t in T],
-                delta_t[w,t] == delta_tup[w,t] - delta_tdown[w,t])
+                 delta_tup[w,t] - delta_tdown[w,t] == p_real[w,t] - p_DA[t])
     @constraint(Step1_3_2, [w in W, t in T],
                 I_B[w,t] <= -Imbalance[w,t]*lambda_DA[w,t]*delta_tdown[w,t] #System surplus, WF deficit, pay @ DA price
                 -(1-Imbalance[w,t])*1.2*lambda_DA[w,t]*delta_tdown[w,t] #System deficit, WF deficit, pay @ 1.2*DA price
@@ -78,6 +84,12 @@ for b in 1:betavars+1
     VaR[b] = value(zeta)
     CVaR[b] = value(zeta) - (1/(1-alpha))*sum(prob[w] * value(eta[w]) for w in W)
     Profit[b] = sum( prob[w] * sum( lambda_DA[w,t]*value(p_DA[t]) + value(I_B[w,t]) for t in T) for w in W)
+
+    for w in W
+        DA_prof_w[b,w] = sum(lambda_DA[w,t] * value(p_DA[t]) for t in T)
+        balancing_prof_w[b,w] = sum( value(I_B[w,t]) for t in T)
+        Profits_w[b,w] = DA_prof_w[b,w] + balancing_prof_w[b,w]
+    end
 end
 
 #************************************************************************
@@ -101,16 +113,18 @@ plot(plot_DA, plot_Imb, layout=(1,2), dpi=1000, size=(900,500), margin=5Plots.mm
 #savefig("Markowitz_DAdecs.png")
 #************************************************************************
 
-#************************************************************************ - this only works for the last beta value
-# PLOT - profit distribution over scenarios
-# Profits = zeros(W[end])
-# for w in W
-#     DA_prof = sum(lambda_DA[w,t] * value(p_DA[t]) for t in T)
-#     balancing_prof = sum( (Imbalance[w,t]*0.9 + (1-Imbalance[w,t])*1.2) * lambda_DA[w,t] * (p_real[w,t] - value(p_DA[t])) for t in T)
-#     Profits[w] = DA_prof + balancing_prof
-# end
-# print("So the average profits are: €", round(sum(Profits)/W[end],digits=1))
+#************************************************************************
+# PLOT - profit distribution over scenarios given varying betas
+beta_list = [0.0 0.2 0.5 1.0]
+beta_ind_list = [findfirst(beta .== beta_list[b]) for b in 1:length(beta_list)]
+hists=repeat([histogram(mean(lambda_DA,dims=1)[1,:])], length(hist_list)) #make hist array
+for b in 1:length(beta_list)
+    hists[b] = histogram(Profits_w[beta_ind_list[b],:], label="Profit distribution β=$(beta_list[b])",
+    bins=50, normalize=true, xlabel="Profit (total) [€]", ylabel="Probability")
+    vline!([VaR[beta_ind_list[b]]], label="VaR", color=:red)
+end
+plot(hists..., layout=(2,2), size=(950,550),margin=5Plots.mm, title="Dual-price")
 
-# histogram(Profits, label="Scenarios", xlabel="Profit [€]", ylabel="Frequency") #add vline at expected price
-#plot(Profits, label="label", xlabel="Scenario", ylabel="Profit [€]")
+histogram(Profits_w[1,:], label="Profit β=$(beta[1])", color=:blue)
+histogram!(Profits_w[11,:], label="Profit β=$(beta[11])", color=:red, alpha=0.67)
 #************************************************************************

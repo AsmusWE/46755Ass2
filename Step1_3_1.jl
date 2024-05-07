@@ -18,12 +18,22 @@ lambda_DA = scenarios[samples,:,1]
 p_real = scenarios[samples,:,2] 
 Imbalance = scenarios[samples,:,3]
 
+#PLOTTING and inspecting the data#
+p_real_l = reshape(p_real, (num_samples*T[end],1))
+lambda_DA_l = reshape(lambda_DA, (num_samples*T[end],1))
+hist_seen=histogram2d(p_real_l, lambda_DA_l, show_empty_bins=true,
+    normalize=:pdf, color=:plasma, margin=5Plots.mm) #bins=(45, 25),
+title!("Diversity of (SEEN) input - 2D Histogram")
+xlabel!("Power generation [MW]")
+ylabel!("Spot price [€/MWh]")
+##################################
+
 prob = ones(num_samples) ./ num_samples 
 P_nom = 200 #MW
 
 alpha = 0.90
-betavars = 20
-beta = collect(Float64,0:1:20) ./ betavars # code in a way that beta can be increased gradually and the results are saved
+betavars = 10
+beta = collect(Float64,0:1:10) ./ betavars # code in a way that beta can be increased gradually and the results are saved
 #beta = collect(Float64,0:1:10) ./ (betavars*1000)
 
 DA_decs = zeros(betavars+1,24)
@@ -32,6 +42,10 @@ CVaR = zeros(betavars+1)
 Profit = zeros(betavars+1)
 CVaR_test = zeros(betavars+1)
 CVaR_test_VaR_part = zeros(betavars+1)
+
+Profits_w = zeros(betavars+1,W[end])
+DA_prof_w = zeros(betavars+1,W[end])
+balancing_prof_w = zeros(betavars+1,W[end])
 
 for b in 1:betavars+1
     #************************************************************************
@@ -51,7 +65,7 @@ for b in 1:betavars+1
     @constraint(Step1_3_1, [w in W, t in T],
                 delta_t[w,t] == p_real[w,t] - p_DA[t])
     @constraint(Step1_3_1, [w in W, t in T],
-                I_B[w,t] <= (Imbalance[w,t]*0.9 + (1-Imbalance[w,t])*1.2) * lambda_DA[w,t] * delta_t[w,t])
+                I_B[w,t] <= (Imbalance[w,t]*0.9 + (1-Imbalance[w,t])*1.1) * lambda_DA[w,t] * delta_t[w,t])
                 #Firstly, in the purple parenthesis, the balancing market price is set by the system imbalance
                 #Secondly, the sign of delta_t[w,t] then tells us whether the WF is earning or losing money @ the balancing market price
     @constraint(Step1_3_1, [w in W],
@@ -79,6 +93,13 @@ for b in 1:betavars+1
     #the two arrays below are used to show some stuff "mathematically"
     CVaR_test[b] = VaR[b] - 1/(1-alpha) * VaR[b]*sum( prob[w]*(value(eta[w]) > 0 ? 1 : 0) for w in W) + 1/(1-alpha)*sum( prob[w]*(value(eta[w]) > 0 ? 1 : 0)*sum( lambda_DA[w,t]*value(p_DA[t]) + value(I_B[w,t]) for t in T) for w in W)
     CVaR_test_VaR_part[b] = VaR[b] - 1/(1-alpha) * VaR[b]*sum( prob[w]*(value(eta[w]) > 0 ? 1 : 0) for w in W)
+
+    
+    for w in W
+        DA_prof_w[b,w] = sum(lambda_DA[w,t] * value(p_DA[t]) for t in T)
+        balancing_prof_w[b,w] = sum( value(I_B[w,t]) for t in T)
+        Profits_w[b,w] = DA_prof_w[b,w] + balancing_prof_w[b,w]
+    end
 end
 
 #************************************************************************
@@ -101,13 +122,29 @@ plot(plot_DA, plot_Imb, layout=(1,2), dpi=1000, size=(900,500), margin=5Plots.mm
 
 #************************************************************************ - this only works for the last beta value
 # PLOT - profit distribution over scenarios
-# Profits = zeros(W[end])
-# for w in W
-#     DA_prof = sum(lambda_DA[w,t] * value(p_DA[t]) for t in T)
-#     balancing_prof = sum( (Imbalance[w,t]*0.9 + (1-Imbalance[w,t])*1.2) * lambda_DA[w,t] * (p_real[w,t] - value(p_DA[t])) for t in T)
-#     Profits[w] = DA_prof + balancing_prof
+
+# beta_list = [0.0 0.2 0.5 1.0]
+# beta_ind_list = [findfirst(beta .== beta_list[b]) for b in 1:length(beta_list)]
+# hists=repeat([histogram(mean(lambda_DA,dims=1)[1,:])], length(hist_list)) #make hist array
+# for b in 1:length(beta_list)
+#     hists[b] = histogram(DA_prof_w[beta_ind_list[b],:], label="DA distribution β=$(beta_list[b])",
+#     bins=25, normalize=true, xlabel="Profit (DA) [€]", ylabel="Probability")
+#     histogram!(balancing_prof_w[beta_ind_list[b],:], label="Balancing distribution β=$(beta_list[b])",
+#     bins=25, normalize=true, xlabel="Profit (balancing) [€]", ylabel="Probability", alpha=0.67)
+#     vline!([VaR[beta_ind_list[b]]], label="VaR", color=:red)
 # end
-# print("So the average profits are: €", round(sum(Profits)/W[end],digits=1))
+# plot(hists..., layout=(2,2), size=(950,550),margin=5Plots.mm, title="Single-price")
+
+beta_list = [0.0 0.2 0.5 1.0]
+beta_ind_list = [findfirst(beta .== beta_list[b]) for b in 1:length(beta_list)]
+hists=repeat([histogram(mean(lambda_DA,dims=1)[1,:])], length(hist_list)) #make hist array
+for b in 1:length(beta_list)
+    hists[b] = histogram(Profits_w[beta_ind_list[b],:], label="Profit distribution β=$(beta_list[b])",
+    bins=50, normalize=true, xlabel="Profit (total) [€]", ylabel="Probability")
+    vline!([VaR[beta_ind_list[b]]], label="VaR", color=:red)
+end
+plot(hists..., layout=(2,2), size=(950,550),margin=5Plots.mm, title="Single-price")
+
 
 # histogram(Profits, label="Scenarios", xlabel="Profit [€]", ylabel="Frequency") #add vline at expected price
 #plot(Profits, label="label", xlabel="Scenario", ylabel="Profit [€]")

@@ -25,7 +25,6 @@ P_nom = 200 #MW
 Step1_2 = Model(Gurobi.Optimizer)
 
 @variable(Step1_2, 0 <= p_DA[t in T] <= P_nom) #Electricity offered in DA market
-@variable(Step1_2, delta_t[w in W, t in T]) #Realised difference in generation and offer in DA, auxiliary
 @variable(Step1_2, 0 <= delta_tup[w in W, t in T]) #Realised production SURPLUS relative to DA offer
 @variable(Step1_2, 0 <= delta_tdown[w in W, t in T]) #Realised production DEFICIT relative to DA offer
 @variable(Step1_2, I_B[w in W, t in T]) #The profit balance in balancing market
@@ -34,9 +33,8 @@ Step1_2 = Model(Gurobi.Optimizer)
             sum( prob[w] * sum( lambda_DA[w,t]*p_DA[t] + I_B[w,t] for t in T) for w in W))
 
 @constraint(Step1_2, [w in W, t in T],
-            delta_t[w,t] == p_real[w,t] - p_DA[t])
-@constraint(Step1_2, [w in W, t in T],
-            delta_t[w,t] == delta_tup[w,t] - delta_tdown[w,t])
+             delta_tup[w,t] - delta_tdown[w,t] == p_real[w,t] - p_DA[t])
+
 @constraint(Step1_2, [w in W, t in T],
             I_B[w,t] <= -Imbalance[w,t]*lambda_DA[w,t]*delta_tdown[w,t] #System surplus, WF deficit, pay @ DA price
                         -(1-Imbalance[w,t])*1.2*lambda_DA[w,t]*delta_tdown[w,t] #System deficit, WF deficit, pay @ 1.2*DA price
