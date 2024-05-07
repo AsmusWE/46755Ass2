@@ -114,6 +114,7 @@ plot_DA = plot(beta, DA_decs, label=label_DA_decs, xlabel="β [-]", ylabel="pDA 
 plot_sumDA = plot(beta, sum(DA_decs,dims=2), label=false, xlabel="β [-]", ylabel="pDA [MWh]",
     title="Trend in DA decisions", legend=:topright,color=palette(:tab10))
 plot(plot_Markowitz, plot_sumDA, layout=(1,2), dpi=800, size=(900,500), margin=5Plots.mm)
+savefig("pics/Markowitz_DAtrend_single.png")
 
 plot_Imb = plot(mean(Imbalance,dims=1)[1,:], legend=false,color=palette(:tab10))
 hline!([2/3])
@@ -137,17 +138,19 @@ plot(plot_DA, plot_Imb, layout=(1,2), dpi=800, size=(900,500), margin=5Plots.mm)
 
 beta_list = [0.0 0.1 0.5 1.0]
 beta_ind_list = [findfirst(beta .== beta_list[b]) for b in 1:length(beta_list)]
-hists=repeat([histogram(mean(lambda_DA,dims=1)[1,:])], length(hist_list)) #make hist array
+hists=repeat([histogram(mean(lambda_DA,dims=1)[1,:])], length(beta_list)) #make hist array
 for b in 1:length(beta_list)
     hists[b] = histogram(Profits_w[beta_ind_list[b],:], label="Profit distribution β=$(beta_list[b])",
     bins=50, normalize=true, xlabel="Profit (total) [€]", ylabel="Probability", color=palette(:tab10))
     vline!([VaR[beta_ind_list[b]]], label="VaR", linewidth=2)
 end
 plot(hists..., layout=(2,2), size=(950,550),margin=5Plots.mm, dpi=800)#, title="Single-price")
+savefig("pics/profvol_single.png")
 
 histogram(Profits_w[1,:], label="Profit β=$(beta[1])", color=palette(:tab10), bins=25, normalize=:true, dpi=800)
 histogram!(Profits_w[11,:], label="Profit β=$(beta[11])", alpha=0.75, bins=25, normalize=:true, 
     xlabel="Profit [total] €", ylabel="Probability", title="Single-price", dpi=800)
+savefig("pics/profvol_single_0-1.png")
 # histogram(Profits, label="Scenarios", xlabel="Profit [€]", ylabel="Frequency") #add vline at expected price
 #plot(Profits, label="label", xlabel="Scenario", ylabel="Profit [€]")
 #************************************************************************

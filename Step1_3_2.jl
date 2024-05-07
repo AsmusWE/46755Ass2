@@ -106,6 +106,7 @@ plot_sumDA = plot(beta, sum(DA_decs,dims=2), label=false, xlabel="β [-]", color
     title="Trend in DA decisions", legend=:topright)
 
 plot(plot_Markowitz, plot_sumDA, layout=(1,2), dpi=800, size=(900,500), margin=5Plots.mm)
+savefig("pics/Markowitz_DAtrend_dual.png")
 
 plot_Imb = plot(mean(Imbalance,dims=1)[1,:], legend=false, color=palette(:tab10))
 hline!([2/3])
@@ -124,8 +125,10 @@ for b in 1:length(beta_list)
     vline!([VaR[beta_ind_list[b]]], label="VaR", linewidth=2)
 end
 plot(hists..., layout=(2,2), size=(950,550),margin=5Plots.mm, dpi=800)
+savefig("pics/profvol_dual.png")
 
 histogram(Profits_w[1,:], label="Profit β=$(beta[1])", color=palette(:tab10), bins=25, normalize=:true, dpi=800)
 histogram!(Profits_w[11,:], label="Profit β=$(beta[11])", alpha=0.75, bins=25,normalize=:true, 
     xlabel="Profit [total] €", ylabel="Probability", title="Dual-price", dpi=800)
+savefig("pics/profvol_dual_0-1.png")
 #************************************************************************

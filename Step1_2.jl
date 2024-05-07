@@ -8,7 +8,7 @@ T = collect(1:24)
 W_tot = collect(1:1200)
 
 num_samples = 250
-Random.seed!(2300) #1, 23, 1212
+#Random.seed!(2300) #interesting cases: 1, 23, 1212, 2300
 
 samples = sample(W_tot, num_samples, replace=false) #collect(1:250) #
 W = collect(1:num_samples)
