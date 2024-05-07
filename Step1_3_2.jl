@@ -117,7 +117,7 @@ plot(plot_DA, plot_Imb, layout=(1,2), dpi=800, size=(900,500), margin=5Plots.mm)
 # PLOT - profit distribution over scenarios given varying betas
 beta_list = [0.0 0.1 0.5 1.0]
 beta_ind_list = [findfirst(beta .== beta_list[b]) for b in 1:length(beta_list)]
-hists=repeat([histogram(mean(lambda_DA,dims=1)[1,:])], length(hist_list)) #make hist array
+hists=repeat([histogram(mean(lambda_DA,dims=1)[1,:])], length(beta_list)) #make hist array
 for b in 1:length(beta_list)
     hists[b] = histogram(Profits_w[beta_ind_list[b],:], label="Profit distribution β=$(beta_list[b])",
     bins=50, normalize=true, xlabel="Profit (total) [€]", ylabel="Probability", color=palette(:tab10))
