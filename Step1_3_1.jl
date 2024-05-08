@@ -75,6 +75,7 @@ for b in 1:betavars+1
     #************************************************************************
     # SOLVE
     set_time_limit_sec(Step1_3_1,30)
+    set_silent(Step1_3_1)
     solution = optimize!(Step1_3_1)
     println("Termination status: $(termination_status(Step1_3_1))")
     #************************************************************************

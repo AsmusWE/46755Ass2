@@ -8,12 +8,18 @@ T = collect(1:24)
 W_tot = collect(1:1200)
 
 num_samples = 250
-#Random.seed!(2300) #interesting cases: 1, 23, 1212, 2300
+
+############## Used for 1.4 ##############
+#Random.seed!(1212) #interesting cases: 1, 23, 1212, 2300
+############## Used for 1.4 ##############
 
 samples = sample(W_tot, num_samples, replace=false) #collect(1:250) #
 
+############## Used to test opportunity costs in 1.3 ##############
 #samples = unseen #remember to run 1.1 -> 1.4 -> 1.1, otherwise these two rows (15-16) won't work
 #num_samples = 950 #trying to run the optimization model using the unseen samples to check what the opportunity cost is when more power is generally available in the unseen samples - very small...
+############## Used to test opportunity costs in 1.3 ##############
+
 
 W = collect(1:num_samples)
 
@@ -49,6 +55,7 @@ Step1_2 = Model(Gurobi.Optimizer)
 #************************************************************************
 # SOLVE
 set_time_limit_sec(Step1_2,30)
+set_silent(Step1_2)
 solution = optimize!(Step1_2)
 println("Termination status: $(termination_status(Step1_2))")
 #************************************************************************

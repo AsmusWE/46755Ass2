@@ -2,6 +2,9 @@
 include("Step1_1.jl")
 seen = samples
 unseen = W_tot[ [!(W_tot[s] in samples) for s in W_tot] ]
+####Trying out other sets of 250 samples for "seen" scenarios is done by
+#### changing the seed set in "Step1_1.jl" and "Step1_2.jl"
+
 #sort(seen)'
 #sort(unseen)'
 
