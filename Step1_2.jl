@@ -11,6 +11,10 @@ num_samples = 250
 #Random.seed!(2300) #interesting cases: 1, 23, 1212, 2300
 
 samples = sample(W_tot, num_samples, replace=false) #collect(1:250) #
+
+#samples = unseen #remember to run 1.1 -> 1.4 -> 1.1, otherwise these two rows (15-16) won't work
+#num_samples = 950 #trying to run the optimization model using the unseen samples to check what the opportunity cost is when more power is generally available in the unseen samples - very small...
+
 W = collect(1:num_samples)
 
 lambda_DA = scenarios[samples,:,1]
@@ -71,10 +75,8 @@ for w in W
     for t in T
         if(p_real[w,t] - value(p_DA[t]) >= 0)
             delta_tup[w,t] = p_real[w,t] - value(p_DA[t])
-            delta_tdown[w,t] = 0
         else 
             delta_tdown[w,t] = value(p_DA[t]) - p_real[w,t]
-            delta_tup[w,t] = 0
         end
     end
     balancing_prof[w] = sum(
