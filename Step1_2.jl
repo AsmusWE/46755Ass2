@@ -95,6 +95,7 @@ for w in W
 end
 print("So the average profits are: €", round(sum(Profits)/W[end],digits=1))
 
-histogram(Profits, label="Scenarios", xlabel="Profit [€]", ylabel="Frequency",bins=25) #add vline at expected price
+histogram(Profits, label="Scenarios", xlabel="Profit [€]", ylabel="Frequency",bins=25, color=palette(:tab10)) #add vline at expected price
+vline!([objective_value(Step1_2)],label="Expected profit", linewidth=2)
 #plot(Profits, label="label", xlabel="Scenario", ylabel="Profit [€]")
 #************************************************************************

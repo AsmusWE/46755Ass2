@@ -51,6 +51,7 @@ Step1_1 = Model(Gurobi.Optimizer)
             delta_t[w,t] == p_real[w,t] - p_DA[t])
 @constraint(Step1_1, [w in W, t in T],
             I_B[w,t] <= (Imbalance[w,t]*0.9 + (1-Imbalance[w,t])*1.2) * lambda_DA[w,t] * delta_t[w,t])
+
             #Firstly, in the purple parenthesis, the balancing market price is set by the system imbalance
             #Secondly, the sign of delta_t[w,t] then tells us whether the WF is earning or losing money @ the balancing market price
 #************************************************************************
@@ -83,7 +84,8 @@ for w in W
 end
 print("So the average profits are: €", round(sum(Profits)/W[end],digits=1))
 
-histogram(Profits, label="Scenarios", xlabel="Profit [€]", ylabel="Frequency", bins=25) #add vline at expected price
+histogram(Profits, label="Scenarios", xlabel="Profit [€]", ylabel="Frequency", bins=25, color=palette(:tab10)) #add vline at expected price
+vline!([objective_value(Step1_1)],label="Expected profit", linewidth=2)
 #plot(Profits, label="label", xlabel="Scenario", ylabel="Profit [€]")
 #************************************************************************
 
