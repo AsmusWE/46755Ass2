@@ -59,7 +59,7 @@ Step1_1 = Model(Gurobi.Optimizer)
 #************************************************************************
 # SOLVE
 set_time_limit_sec(Step1_1,30)
-set_silent(Step1_1)
+#set_silent(Step1_1)
 solution = optimize!(Step1_1)
 println("Termination status: $(termination_status(Step1_1))")
 #************************************************************************

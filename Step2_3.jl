@@ -49,6 +49,7 @@ for (i, c_val) in enumerate(C_vals)
     end
 end
 errorline!(1:60,transpose(PlotProfiles), errorstyle = :plume, ylims = (0, 510), label = "Scenarios")
+#plot!([(sum(PlotProfiles,dims=1)/150)[1,:]],label="mean",linewidth=4,color=:red)
 
 #plot!(1:60, C_vals, label="ALSOX_C values")
 
