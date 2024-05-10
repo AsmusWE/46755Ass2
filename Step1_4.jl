@@ -66,12 +66,12 @@ println("#######################################################################
 
 #histogram(Profits, label="Scenarios", xlabel="Profit [€]", ylabel="Probability") #add vline at expected price
 histogram(Profits, label="seen", xlabel="Profit (total) [€]", ylabel="Probability", color=palette(:tab10), normalize=:true, bins=25)
-histogram!([x+y], label="unseen", alpha=0.67, normalize=:true, bins=25, dpi=800)
+histogram!([x+y], label="unseen", alpha=0.67, normalize=:true, bins=25, dpi=800, title="Single-price", margin=3Plots.mm)
 
 savefig("pics_1-4/profdist_single-price_outofsample")
 
 histogram(balancing_prof, label="seen", xlabel="Profit (balancing) [€]", ylabel="Probability", color=palette(:tab10), normalize=:true, bins=25)
-histogram!(y, label="unseen", alpha=0.67, normalize=:true, bins=25, dpi=800)
+histogram!(y, label="unseen", alpha=0.67, normalize=:true, bins=25, dpi=800, title="Single-price", margin=3Plots.mm)
 
 savefig("pics_1-4/balancing-profdist_single-price_outofsample")
 #plot(Profits, label="label", xlabel="Scenario", ylabel="Profit [€]")
@@ -135,13 +135,13 @@ println("#######################################################################
 
 #histogram(Profits, label="Scenarios", xlabel="Profit [€]", ylabel="Probability") #add vline at expected price
 histogram(Profits, label="seen", xlabel="Profit (total) [€]", ylabel="Probability", color=palette(:tab10), normalize=:true, bins=25)
-histogram!([x+y], label="unseen", alpha=0.67, normalize=:true, bins=25, dpi=800)
+histogram!([x+y], label="unseen", alpha=0.67, normalize=:true, bins=25, dpi=800, title="Dual-price", margin=3Plots.mm)
 
 savefig("pics_1-4/profdist_dual-price_outofsample")
 
 
 histogram(balancing_prof, label="seen", xlabel="Profit (balancing) [€]", ylabel="Probability", color=palette(:tab10), normalize=:true, bins=25)
-histogram!(y, label="unseen", alpha=0.67, normalize=:true, bins=25, dpi=800)
+histogram!(y, label="unseen", alpha=0.67, normalize=:true, bins=25, dpi=800, title="Dual-price", margin=3Plots.mm)
 
 savefig("pics_1-4/balancing_profdist_dual-price_outofsample")
 
