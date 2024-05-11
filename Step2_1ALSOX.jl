@@ -14,6 +14,7 @@ function solve_relaxed(q, profiles, training_profiles)
     #************************************************************************
     # MODEL
     Step2_1 = Model(Gurobi.Optimizer)
+    set_silent(Step2_1)
 
     @variable(Step2_1, 0 <= y[1:len_m,1:Ω] <= 1)
     @variable(Step2_1, 0 <= c_up)
@@ -67,7 +68,7 @@ function solve_ALSOX(ϵ = 0.1, profiles = 200, training_profiles = 50)
     return best_c
 end
 
-solve_ALSOX()
+@timed solve_ALSOX()
  
 
 

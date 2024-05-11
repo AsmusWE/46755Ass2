@@ -13,6 +13,7 @@ function solve_CVaR()
     #************************************************************************
     # MODEL
     Step2_1 = Model(Gurobi.Optimizer)
+    set_silent(Step2_1)
 
     @variable(Step2_1, 0 <= c_up)
     @variable(Step2_1, β<=0)
@@ -45,3 +46,5 @@ function solve_CVaR()
     #************************************************************************
     return value(c_up)
 end
+
+@timed solve_CVaR()
