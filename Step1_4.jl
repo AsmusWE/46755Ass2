@@ -44,9 +44,9 @@ savefig("pics_1-4/inputdata_lineplot.png")
 x = zeros(length(unseen)) #DA profit, unseen
 y = zeros(length(unseen)) #Balancing profit, unseen
 delta = zeros(W_tot[end],T[end])
-count = 0 #this is used in order to only define x's and y's corresponding to the length of the unseen sample set
+global count = 0 #this is used in order to only define x's and y's corresponding to the length of the unseen sample set
 for w in unseen
-    count += 1
+    global count += 1
     x[count] = sum(lambda_DA[w,t] * value.(p_DA[t]) for t in T)
     delta[w,:] = p_real[w,:] .- value.(p_DA)
     y[count] = sum( (Imbalance[w,t]*0.9 + (1-Imbalance[w,t])*1.2) * lambda_DA[w,t] * delta[w,t] for t in T)
@@ -66,12 +66,12 @@ println("#######################################################################
 
 #histogram(Profits, label="Scenarios", xlabel="Profit [€]", ylabel="Probability") #add vline at expected price
 histogram(Profits, label="seen", xlabel="Profit (total) [€]", ylabel="Probability", color=palette(:tab10), normalize=:true, bins=25)
-histogram!([x+y], label="unseen", alpha=0.67, normalize=:true, bins=25, dpi=800)
+histogram!([x+y], label="unseen", alpha=0.67, normalize=:true, bins=25, dpi=800, title="Single-price", margin=3Plots.mm)
 
 savefig("pics_1-4/profdist_single-price_outofsample")
 
 histogram(balancing_prof, label="seen", xlabel="Profit (balancing) [€]", ylabel="Probability", color=palette(:tab10), normalize=:true, bins=25)
-histogram!(y, label="unseen", alpha=0.67, normalize=:true, bins=25, dpi=800)
+histogram!(y, label="unseen", alpha=0.67, normalize=:true, bins=25, dpi=800, title="Single-price", margin=3Plots.mm)
 
 savefig("pics_1-4/balancing-profdist_single-price_outofsample")
 #plot(Profits, label="label", xlabel="Scenario", ylabel="Profit [€]")
@@ -104,9 +104,9 @@ y = zeros(length(unseen)) #Balancing profit, unseen
 delta = zeros(length(unseen),T[end])
 delta_up = zeros(length(unseen),T[end])
 delta_down = zeros(length(unseen),T[end])
-count=0
+global count=0
 for w in unseen
-    count+=1
+    global count+=1
     x[count] = sum(lambda_DA[w,t] * value.(p_DA[t]) for t in T)
     delta[count,:] = p_real[w,:] .- value.(p_DA)
     for t in T
@@ -135,13 +135,13 @@ println("#######################################################################
 
 #histogram(Profits, label="Scenarios", xlabel="Profit [€]", ylabel="Probability") #add vline at expected price
 histogram(Profits, label="seen", xlabel="Profit (total) [€]", ylabel="Probability", color=palette(:tab10), normalize=:true, bins=25)
-histogram!([x+y], label="unseen", alpha=0.67, normalize=:true, bins=25, dpi=800)
+histogram!([x+y], label="unseen", alpha=0.67, normalize=:true, bins=25, dpi=800, title="Dual-price", margin=3Plots.mm)
 
 savefig("pics_1-4/profdist_dual-price_outofsample")
 
 
 histogram(balancing_prof, label="seen", xlabel="Profit (balancing) [€]", ylabel="Probability", color=palette(:tab10), normalize=:true, bins=25)
-histogram!(y, label="unseen", alpha=0.67, normalize=:true, bins=25, dpi=800)
+histogram!(y, label="unseen", alpha=0.67, normalize=:true, bins=25, dpi=800, title="Dual-price", margin=3Plots.mm)
 
 savefig("pics_1-4/balancing_profdist_dual-price_outofsample")
 

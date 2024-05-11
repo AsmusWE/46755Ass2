@@ -106,16 +106,19 @@ end
 #************************************************************************
 # PLOT - Markowitz curve
 scatter(CVaR,Profit, label=false, color=palette(:tab10), markershape=:x)
-plot_Markowitz = plot!(CVaR,Profit, label="Single-price", xlabel="CVaR [€]", ylabel="Profit [€]", color=palette(:tab10), title="Markowitz curve")
+plot_Markowitz = plot!(CVaR, Profit, label="Single-price", xlabel="CVaR [€]", ylabel="Expected profit [€]", color=palette(:tab10),
+   dpi=800)
+savefig("pics/Markowitz_single.png")
+
 hcat(beta, DA_decs)
 label_DA_decs = permutedims(["h=$t" for t in T]) #we need row vector
 ylimit = max(maximum(DA_decs[:,1:5]), maximum(DA_decs[:,7:24])) #otherwise the plot is not as useful
-plot_DA = plot(beta, DA_decs, label=label_DA_decs, xlabel="β [-]", ylabel="pDA [MWh]",
-    ylim=[0,ylimit], title="Trend in DA decisions", legend=:topright, color=palette(:tab10))
-plot_sumDA = plot(beta, sum(DA_decs,dims=2), label=false, xlabel="β [-]", ylabel="pDA [MWh]",
-    title="Trend in DA decisions", legend=:topright,color=palette(:tab10))
-plot(plot_Markowitz, plot_sumDA, layout=(1,2), dpi=800, size=(900,500), margin=5Plots.mm)
-savefig("pics/Markowitz_DAtrend_single.png")
+plot_DA = plot(beta, DA_decs, label=label_DA_decs, xlabel="β [-]", ylabel="Total daily DA offer [MWh]",
+    ylim=[0,ylimit], legend=:topright, color=palette(:tab10))
+
+plot_sumDA = plot(beta, sum(DA_decs,dims=2), label="Single-price", xlabel="β [-]", ylabel="Total daily DA offer [MWh]",
+    color=palette(:tab10), dpi=800)
+savefig("pics/DAtrend_single.png")
 
 plot_Imb = plot(mean(Imbalance,dims=1)[1,:], legend=false,color=palette(:tab10))
 hline!([2/3])
