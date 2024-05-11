@@ -44,9 +44,9 @@ savefig("pics_1-4/inputdata_lineplot.png")
 x = zeros(length(unseen)) #DA profit, unseen
 y = zeros(length(unseen)) #Balancing profit, unseen
 delta = zeros(W_tot[end],T[end])
-count = 0 #this is used in order to only define x's and y's corresponding to the length of the unseen sample set
+global count = 0 #this is used in order to only define x's and y's corresponding to the length of the unseen sample set
 for w in unseen
-    count += 1
+    global count += 1
     x[count] = sum(lambda_DA[w,t] * value.(p_DA[t]) for t in T)
     delta[w,:] = p_real[w,:] .- value.(p_DA)
     y[count] = sum( (Imbalance[w,t]*0.9 + (1-Imbalance[w,t])*1.2) * lambda_DA[w,t] * delta[w,t] for t in T)
@@ -104,9 +104,9 @@ y = zeros(length(unseen)) #Balancing profit, unseen
 delta = zeros(length(unseen),T[end])
 delta_up = zeros(length(unseen),T[end])
 delta_down = zeros(length(unseen),T[end])
-count=0
+global count=0
 for w in unseen
-    count+=1
+    global count+=1
     x[count] = sum(lambda_DA[w,t] * value.(p_DA[t]) for t in T)
     delta[count,:] = p_real[w,:] .- value.(p_DA)
     for t in T
